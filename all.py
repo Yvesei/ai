@@ -39,11 +39,16 @@ def load_all_csv_flows(csv_dir):
             df = pd.read_csv(csv_file)
             all_flows.append(df)
             print(f"  Loaded {os.path.basename(csv_file)}: {len(df)} flows")
+            if len(all_flows) == 1:
+                print(f"    Columns: {df.columns.tolist()}")
         except Exception as e:
             print(f"  Error loading {csv_file}: {e}")
 
     flows_df = pd.concat(all_flows, ignore_index=True)
     print(f"\nTotal flows loaded: {len(flows_df)}")
+    print(f"Columns: {flows_df.columns.tolist()}")
+    print(f"\nFirst few rows:")
+    print(flows_df.head())
     return flows_df
 
 
@@ -56,19 +61,33 @@ def add_fan_in_fan_out_features(flows_df, time_window=300):
     Add fan-in and fan-out features using fast vectorized approach
     """
     print("\nAdding fan-in and fan-out features (vectorized)...")
-    print(flows_df)
-    flows_df = flows_df.sort_values('first_timestamp').reset_index(drop=True)
+    print(f"Available columns: {flows_df.columns.tolist()}")
+
+    # Check if timestamp column exists
+    timestamp_col = None
+    for col in ['first_timestamp', 'bidirectional_first_seen_ms', 'timestamp']:
+        if col in flows_df.columns:
+            timestamp_col = col
+            break
+
+    if timestamp_col:
+        flows_df = flows_df.sort_values(timestamp_col).reset_index(drop=True)
+        print(f"  Sorted by {timestamp_col}")
+    else:
+        print(f"  WARNING: No timestamp column found, skipping sort")
 
     # Fast approach: compute based on global connection patterns
     # Fan-out: how many unique destinations each source connects to
-    fan_out_src = flows_df.groupby('ip_src')['ip_dst'].nunique().to_dict()
-    flows_df['fan_out_src'] = flows_df['ip_src'].map(fan_out_src).fillna(0).astype(int)
+    fan_out_src = flows_df.groupby('src_ip')['dst_ip'].nunique().to_dict()
+    flows_df['fan_out_src'] = flows_df['src_ip'].map(fan_out_src).fillna(0).astype(int)
 
     # Fan-in: how many unique sources connect to each destination
-    fan_in_dst = flows_df.groupby('ip_dst')['ip_src'].nunique().to_dict()
-    flows_df['fan_in_dst'] = flows_df['ip_dst'].map(fan_in_dst).fillna(0).astype(int)
+    fan_in_dst = flows_df.groupby('dst_ip')['src_ip'].nunique().to_dict()
+    flows_df['fan_in_dst'] = flows_df['dst_ip'].map(fan_in_dst).fillna(0).astype(int)
 
-    print("Fan-in and fan-out features added (FAST!)")
+    print("✓ Fan-in and fan-out features added")
+    print(f"  fan_out_src range: {flows_df['fan_out_src'].min()} to {flows_df['fan_out_src'].max()}")
+    print(f"  fan_in_dst range: {flows_df['fan_in_dst'].min()} to {flows_df['fan_in_dst'].max()}")
     return flows_df
 
 
@@ -83,38 +102,47 @@ def load_ground_truth(gt_file):
     print("\nLoading ground truth...")
     print(f"File: {gt_file}")
 
-    # Try different delimiters
-    delimiters = ['\t', '\s+', ',', ' ']
-    gt_df = None
+    # Try with header=0 first (comma-separated CSV with header)
+    try:
+        gt_df = pd.read_csv(gt_file, sep=',', header=0)
+        print(f"  ✓ Successfully read with comma delimiter and header=0")
+        print(f"  Shape: {gt_df.shape}")
+        print(f"  Columns: {gt_df.columns.tolist()}")
+        print(f"  First row:\n{gt_df.iloc[0]}")
+    except Exception as e:
+        print(f"  ✗ Failed with comma + header: {e}")
+        # Try different delimiters without header
+        delimiters = ['\t', '\s+', ' ']
+        gt_df = None
 
-    for delimiter in delimiters:
-        try:
-            gt_df = pd.read_csv(gt_file, sep=delimiter, header=None, engine='python')
-            print(f"  ✓ Successfully read with delimiter: {repr(delimiter)}")
-            print(f"  Shape: {gt_df.shape}")
-            print(f"  First row: {gt_df.iloc[0].tolist()}")
-            break
-        except Exception as e:
-            print(f"  ✗ Failed with delimiter {repr(delimiter)}: {e}")
-            continue
+        for delimiter in delimiters:
+            try:
+                gt_df = pd.read_csv(gt_file, sep=delimiter, header=None, engine='python')
+                print(f"  ✓ Successfully read with delimiter: {repr(delimiter)}")
+                print(f"  Shape: {gt_df.shape}")
+                print(f"  First row: {gt_df.iloc[0].tolist()}")
+                break
+            except Exception as e2:
+                print(f"  ✗ Failed with delimiter {repr(delimiter)}: {e2}")
+                continue
 
-    if gt_df is None:
-        raise ValueError("Could not read ground truth file with any delimiter")
+        if gt_df is None:
+            raise ValueError("Could not read ground truth file with any delimiter")
 
-    # Check if first row is header (contains strings like 'dst_ip')
-    first_row_str = str(gt_df.iloc[0, 0])
-    print(f"  First cell value: {first_row_str}")
+        # Check if first row is header
+        first_row_str = str(gt_df.iloc[0, 0])
+        print(f"  First cell value: {first_row_str}")
 
-    if not first_row_str.replace('.', '').replace('-', '').isdigit():
-        print("  → Detected header row, skipping...")
-        gt_df = gt_df.iloc[1:].reset_index(drop=True)
+        if not first_row_str.replace('.', '').replace('-', '').isdigit():
+            print("  → Detected header row, skipping...")
+            gt_df = gt_df.iloc[1:].reset_index(drop=True)
 
-    # Select first 7 columns
-    if len(gt_df.columns) >= 7:
-        gt_df = gt_df.iloc[:, :7]
+        # Select first 7 columns
+        if len(gt_df.columns) >= 7:
+            gt_df = gt_df.iloc[:, :7]
 
-    gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
-                     'port_src', 'port_dst', 'protocol']
+        gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
+                         'port_src', 'port_dst', 'protocol']
 
     print(f"  ✓ Ground truth flows: {len(gt_df)}")
     print(f"  Sample row:\n{gt_df.iloc[0]}")
@@ -161,25 +189,33 @@ def vectorize_flows(flows_df):
     """
     Convert flows to feature vectors
     """
-    numeric_features = ['duration', 'packets', 'bytes', 'bytes_rev',
-                        'fan_out_src', 'fan_in_dst', 'port_src', 'port_dst',
-                        'packets_src2dst', 'packets_dst2src', 'mean_ps',
-                        'stddev_ps', 'mean_piat_ms', 'stddev_piat_ms',
-                        'syn_packets', 'ack_packets', 'fin_packets', 'rst_packets']
+    print("\nVectorizing flows...")
+    print(f"Available columns: {flows_df.columns.tolist()}")
 
-    # Fill missing values
-    for feat in numeric_features:
-        if feat in flows_df.columns:
-            flows_df[feat] = flows_df[feat].fillna(0)
+    # Numeric features to use (will select available ones)
+    possible_features = ['duration', 'packets', 'bytes', 'bytes_rev',
+                         'fan_out_src', 'fan_in_dst', 'port_src', 'port_dst',
+                         'packets_src2dst', 'packets_dst2src', 'mean_ps',
+                         'stddev_ps', 'mean_piat_ms', 'stddev_piat_ms',
+                         'syn_packets', 'ack_packets', 'fin_packets', 'rst_packets',
+                         'src2dst_packets', 'dst2src_packets', 'src2dst_bytes', 'dst2src_bytes',
+                         'bidirectional_packets', 'bidirectional_bytes', 'bidirectional_duration_ms']
 
     # Select available features
-    available_features = [f for f in numeric_features if f in flows_df.columns]
+    available_features = [f for f in possible_features if f in flows_df.columns]
+    print(f"Using {len(available_features)} features: {available_features}")
+
+    # Fill missing values
+    for feat in available_features:
+        flows_df[feat] = flows_df[feat].fillna(0)
+
     X = flows_df[available_features].values.astype(np.float32)
 
     # Normalize
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
+    print(f"✓ Vectorization complete: {X_scaled.shape}")
     return X_scaled, available_features
 
 
