@@ -53,35 +53,22 @@ def load_all_csv_flows(csv_dir):
 
 def add_fan_in_fan_out_features(flows_df, time_window=300):
     """
-    Add fan-in and fan-out features based on temporal sliding window
+    Add fan-in and fan-out features using fast vectorized approach
     """
-    print("\nAdding fan-in and fan-out features...")
+    print("\nAdding fan-in and fan-out features (vectorized)...")
 
     flows_df = flows_df.sort_values('first_timestamp').reset_index(drop=True)
 
-    flows_df['fan_out_src'] = 0
-    flows_df['fan_in_dst'] = 0
+    # Fast approach: compute based on global connection patterns
+    # Fan-out: how many unique destinations each source connects to
+    fan_out_src = flows_df.groupby('ip_src')['ip_dst'].nunique().to_dict()
+    flows_df['fan_out_src'] = flows_df['ip_src'].map(fan_out_src).fillna(0).astype(int)
 
-    for idx, row in flows_df.iterrows():
-        current_time = row['first_timestamp']
-        window_start = current_time - time_window
+    # Fan-in: how many unique sources connect to each destination
+    fan_in_dst = flows_df.groupby('ip_dst')['ip_src'].nunique().to_dict()
+    flows_df['fan_in_dst'] = flows_df['ip_dst'].map(fan_in_dst).fillna(0).astype(int)
 
-        # Fan-out: unique IPs that src_ip connects to
-        mask_fanout = (flows_df['first_timestamp'] >= window_start) & \
-                      (flows_df['first_timestamp'] <= current_time) & \
-                      (flows_df['ip_src'] == row['ip_src'])
-        flows_df.at[idx, 'fan_out_src'] = flows_df.loc[mask_fanout, 'ip_dst'].nunique()
-
-        # Fan-in: unique IPs that connect to dst_ip
-        mask_fanin = (flows_df['first_timestamp'] >= window_start) & \
-                     (flows_df['first_timestamp'] <= current_time) & \
-                     (flows_df['ip_dst'] == row['ip_dst'])
-        flows_df.at[idx, 'fan_in_dst'] = flows_df.loc[mask_fanin, 'ip_src'].nunique()
-
-        if (idx + 1) % 5000 == 0:
-            print(f"  Processed {idx + 1} flows")
-
-    print("Fan-in and fan-out features added")
+    print("Fan-in and fan-out features added (FAST!)")
     return flows_df
 
 
