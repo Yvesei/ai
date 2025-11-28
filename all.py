@@ -99,8 +99,14 @@ def load_ground_truth(gt_file):
         gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
                          'port_src', 'port_dst', 'protocol']
 
+    # Skip header row if it contains non-numeric data
+    try:
+        gt_df['port_src'] = gt_df['port_src'].astype(int)
+    except:
+        gt_df = gt_df.iloc[1:].reset_index(drop=True)
+        gt_df['port_src'] = gt_df['port_src'].astype(int)
+
     print(f"Ground truth flows: {len(gt_df)}")
-    print(f"Columns: {gt_df.columns.tolist()}")
     return gt_df
 
 
