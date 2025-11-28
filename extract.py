@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 import os
 import glob
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from nfstream import NFStreamer
 import time
+import multiprocessing
 
 
 # ============================================================================
