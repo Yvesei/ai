@@ -1,4 +1,4 @@
-root@server3:/home/student# python3 all.py
+root@server3:/home/student# python3 all_3.py
 ================================================================================
 LOADING EXTRACTED FLOWS FROM CSV
 ================================================================================
@@ -74,13 +74,13 @@ First few rows:
 Adding fan-in and fan-out features (vectorized)...
 Available columns: ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst', 'port_src', 'port_dst', 'protocol', 'application_name', 'duration', 'packets', 'bytes', 'bytes_rev', 'packets_src2dst', 'packets_dst2src', 'bytes_src2dst', 'bytes_dst2src', 'mean_ps', 'stddev_ps', 'mean_piat_ms', 'stddev_piat_ms', 'syn_packets', 'ack_packets', 'fin_packets', 'rst_packets', 'psh_packets']
   Sorted by first_timestamp
-✓ Fan-in and fan-out features added
+ Fan-in and fan-out features added
   fan_out_src range: 1 to 10
   fan_in_dst range: 1 to 10
 
 Loading ground truth...
 File: ./TRAIN/TRAIN.gt
-  ✓ Successfully read with comma delimiter and header=0
+   Successfully read with comma delimiter and header=0
   Shape: (7931, 8)
   Columns: ['first_timestamp_ms', 'last_timestamp_ms', 'src_ip', 'src_port', 'dst_ip', 'dst_port', 'protocol', 'label']
   First row:
@@ -93,7 +93,7 @@ dst_port                          135
 protocol                            6
 label                               1
 Name: 0, dtype: object
-  ✓ Ground truth flows: 7931
+   Ground truth flows: 7931
   Sample row:
 first_timestamp_ms    1421931432000.0
 last_timestamp_ms     1421931433000.0
@@ -318,7 +318,7 @@ Normal flows: 1021503 (99.23%)
 Vectorizing flows...
 Available columns: ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst', 'port_src', 'port_dst', 'protocol', 'application_name', 'duration', 'packets', 'bytes', 'bytes_rev', 'packets_src2dst', 'packets_dst2src', 'bytes_src2dst', 'bytes_dst2src', 'mean_ps', 'stddev_ps', 'mean_piat_ms', 'stddev_piat_ms', 'syn_packets', 'ack_packets', 'fin_packets', 'rst_packets', 'psh_packets', 'fan_out_src', 'fan_in_dst', 'label']
 Using 18 features: ['duration', 'packets', 'bytes', 'bytes_rev', 'fan_out_src', 'fan_in_dst', 'port_src', 'port_dst', 'packets_src2dst', 'packets_dst2src', 'mean_ps', 'stddev_ps', 'mean_piat_ms', 'stddev_piat_ms', 'syn_packets', 'ack_packets', 'fin_packets', 'rst_packets']
-✓ Vectorization complete: (1029447, 18)
+ Vectorization complete: (1029447, 18)
 
 ================================================================================
 SETTING UP CROSS-VALIDATION BY APPLICATION
@@ -348,28 +348,41 @@ SSH: 25855 flows
   Train: 20684, Test: 5171
   Train attacks: 2, Test attacks: 1
 Skipping FTP (insufficient flows: 0)
+Skipping FTP (insufficient flows: 0)
 
 ================================================================================
 CLASSIFYING: HTTP
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(74252), np.int64(1): np.int64(1957)}
+Test set - Class distribution: {np.int64(0): np.int64(18564), np.int64(1): np.int64(489)}
 
 Fold 1:
+  Train classes: (array([0, 1]), array([59401,  1566]))
+  Val classes: (array([0, 1]), array([14851,   391]))
   k-NN - Acc: 0.9908, Prec: 0.8210, Rec: 0.8210, F1: 0.8210
   NB  - Acc: 0.9743, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 2:
+  Train classes: (array([0, 1]), array([59401,  1566]))
+  Val classes: (array([0, 1]), array([14851,   391]))
   k-NN - Acc: 0.9902, Prec: 0.8103, Rec: 0.8082, F1: 0.8092
   NB  - Acc: 0.9743, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 3:
+  Train classes: (array([0, 1]), array([59402,  1565]))
+  Val classes: (array([0, 1]), array([14850,   392]))
   k-NN - Acc: 0.9915, Prec: 0.8243, Rec: 0.8495, F1: 0.8367
   NB  - Acc: 0.9743, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 4:
+  Train classes: (array([0, 1]), array([59402,  1565]))
+  Val classes: (array([0, 1]), array([14850,   392]))
   k-NN - Acc: 0.9899, Prec: 0.7960, Rec: 0.8163, F1: 0.8060
   NB  - Acc: 0.9743, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 5:
+  Train classes: (array([0, 1]), array([59402,  1566]))
+  Val classes: (array([0, 1]), array([14850,   391]))
   k-NN - Acc: 0.9905, Prec: 0.8342, Rec: 0.7852, F1: 0.8090
   NB  - Acc: 0.9743, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
@@ -380,24 +393,36 @@ Test Set (19053 samples):
 ================================================================================
 CLASSIFYING: IMAP
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(180), np.int64(1): np.int64(206)}
+Test set - Class distribution: {np.int64(0): np.int64(45), np.int64(1): np.int64(52)}
 
 Fold 1:
+  Train classes: (array([0, 1]), array([144, 164]))
+  Val classes: (array([0, 1]), array([36, 42]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
 
 Fold 2:
+  Train classes: (array([0, 1]), array([144, 165]))
+  Val classes: (array([0, 1]), array([36, 41]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
 
 Fold 3:
+  Train classes: (array([0, 1]), array([144, 165]))
+  Val classes: (array([0, 1]), array([36, 41]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
 
 Fold 4:
+  Train classes: (array([0, 1]), array([144, 165]))
+  Val classes: (array([0, 1]), array([36, 41]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
 
 Fold 5:
+  Train classes: (array([0, 1]), array([144, 165]))
+  Val classes: (array([0, 1]), array([36, 41]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
 
@@ -408,24 +433,36 @@ Test Set (97 samples):
 ================================================================================
 CLASSIFYING: DNS
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(154631), np.int64(1): np.int64(57)}
+Test set - Class distribution: {np.int64(0): np.int64(38658), np.int64(1): np.int64(14)}
 
 Fold 1:
+  Train classes: (array([0, 1]), array([123704,     46]))
+  Val classes: (array([0, 1]), array([30927,    11]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 0.9091, F1: 0.9524
   NB  - Acc: 0.9996, Prec: 0.4762, Rec: 0.9091, F1: 0.6250
 
 Fold 2:
+  Train classes: (array([0, 1]), array([123705,     45]))
+  Val classes: (array([0, 1]), array([30926,    12]))
   k-NN - Acc: 1.0000, Prec: 0.9231, Rec: 1.0000, F1: 0.9600
   NB  - Acc: 0.9997, Prec: 0.5789, Rec: 0.9167, F1: 0.7097
 
 Fold 3:
+  Train classes: (array([0, 1]), array([123705,     45]))
+  Val classes: (array([0, 1]), array([30926,    12]))
   k-NN - Acc: 0.9999, Prec: 1.0000, Rec: 0.8333, F1: 0.9091
   NB  - Acc: 0.9998, Prec: 0.6667, Rec: 0.8333, F1: 0.7407
 
 Fold 4:
+  Train classes: (array([0, 1]), array([123705,     46]))
+  Val classes: (array([0, 1]), array([30926,    11]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 0.9091, F1: 0.9524
   NB  - Acc: 0.9996, Prec: 0.4737, Rec: 0.8182, F1: 0.6000
 
 Fold 5:
+  Train classes: (array([0, 1]), array([123705,     46]))
+  Val classes: (array([0, 1]), array([30926,    11]))
   k-NN - Acc: 1.0000, Prec: 0.9167, Rec: 1.0000, F1: 0.9565
   NB  - Acc: 0.9995, Prec: 0.4091, Rec: 0.8182, F1: 0.5455
 
@@ -436,24 +473,36 @@ Test Set (38672 samples):
 ================================================================================
 CLASSIFYING: SMTP
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(34446), np.int64(1): np.int64(597)}
+Test set - Class distribution: {np.int64(0): np.int64(8612), np.int64(1): np.int64(149)}
 
 Fold 1:
+  Train classes: (array([0, 1]), array([27556,   478]))
+  Val classes: (array([0, 1]), array([6890,  119]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 0.9827, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 2:
+  Train classes: (array([0, 1]), array([27557,   477]))
+  Val classes: (array([0, 1]), array([6889,  120]))
   k-NN - Acc: 0.9997, Prec: 0.9836, Rec: 1.0000, F1: 0.9917
   NB  - Acc: 0.9829, Prec: 0.5000, Rec: 0.0083, F1: 0.0164
 
 Fold 3:
+  Train classes: (array([0, 1]), array([27557,   477]))
+  Val classes: (array([0, 1]), array([6889,  120]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 0.9830, Prec: 1.0000, Rec: 0.0083, F1: 0.0165
 
 Fold 4:
+  Train classes: (array([0, 1]), array([27557,   478]))
+  Val classes: (array([0, 1]), array([6889,  119]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 0.9833, Prec: 1.0000, Rec: 0.0168, F1: 0.0331
 
 Fold 5:
+  Train classes: (array([0, 1]), array([27557,   478]))
+  Val classes: (array([0, 1]), array([6889,  119]))
   k-NN - Acc: 1.0000, Prec: 1.0000, Rec: 1.0000, F1: 1.0000
   NB  - Acc: 0.9833, Prec: 1.0000, Rec: 0.0168, F1: 0.0331
 
@@ -464,24 +513,36 @@ Test Set (8761 samples):
 ================================================================================
 CLASSIFYING: ICMP
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(40)}
+Test set - Class distribution: {np.int64(0): np.int64(11)}
 
 Fold 1:
+  Train classes: (array([0]), array([32]))
+  Val classes: (array([0]), array([8]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 2:
+  Train classes: (array([0]), array([32]))
+  Val classes: (array([0]), array([8]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 3:
+  Train classes: (array([0]), array([32]))
+  Val classes: (array([0]), array([8]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 4:
+  Train classes: (array([0]), array([32]))
+  Val classes: (array([0]), array([8]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 5:
+  Train classes: (array([0]), array([32]))
+  Val classes: (array([0]), array([8]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
@@ -492,24 +553,36 @@ Test Set (11 samples):
 ================================================================================
 CLASSIFYING: SSH
 ================================================================================
+Training set - Class distribution: {np.int64(0): np.int64(20682), np.int64(1): np.int64(2)}
+Test set - Class distribution: {np.int64(0): np.int64(5170), np.int64(1): np.int64(1)}
 
 Fold 1:
+  Train classes: (array([0, 1]), array([16545,     2]))
+  Val classes: (array([0]), array([4137]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 0.9993, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 2:
+  Train classes: (array([0, 1]), array([16545,     2]))
+  Val classes: (array([0]), array([4137]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 0.9998, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 3:
+  Train classes: (array([0, 1]), array([16546,     1]))
+  Val classes: (array([0, 1]), array([4136,    1]))
   k-NN - Acc: 0.9998, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 0.9993, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 4:
+  Train classes: (array([0, 1]), array([16546,     1]))
+  Val classes: (array([0, 1]), array([4136,    1]))
   k-NN - Acc: 0.9998, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 0.9990, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
 Fold 5:
+  Train classes: (array([0, 1]), array([16546,     2]))
+  Val classes: (array([0]), array([4136]))
   k-NN - Acc: 1.0000, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
   NB  - Acc: 0.9998, Prec: 0.0000, Rec: 0.0000, F1: 0.0000
 
@@ -518,22 +591,43 @@ Test Set (5171 samples):
   NB   - Acc: 0.9998, F1: 0.0000
 
 ================================================================================
-FINAL SUMMARY
+DATASET ANALYSIS
 ================================================================================
 
-k-NN Results:
-  HTTP   - Accuracy: 0.9906 ± 0.0005, F1: 0.8164 ± 0.0114
-  IMAP   - Accuracy: 1.0000 ± 0.0000, F1: 1.0000 ± 0.0000
-  DNS    - Accuracy: 1.0000 ± 0.0000, F1: 0.9461 ± 0.0187
-  SMTP   - Accuracy: 0.9999 ± 0.0001, F1: 0.9983 ± 0.0033
-  ICMP   - Accuracy: 1.0000 ± 0.0000, F1: 0.0000 ± 0.0000
-  SSH    - Accuracy: 0.9999 ± 0.0001, F1: 0.0000 ± 0.0000
+HTTP:
+  Training samples: 76209, Attack ratio: 0.026
+  Test samples: 19053, Attack ratio: 0.026
 
-Naive Bayes Results:
-  HTTP   - Accuracy: 0.9743 ± 0.0000, F1: 0.0000 ± 0.0000
-  IMAP   - Accuracy: 1.0000 ± 0.0000, F1: 1.0000 ± 0.0000
-  DNS    - Accuracy: 0.9996 ± 0.0001, F1: 0.6442 ± 0.0717
-  SMTP   - Accuracy: 0.9830 ± 0.0002, F1: 0.0198 ± 0.0124
-  ICMP   - Accuracy: 1.0000 ± 0.0000, F1: 0.0000 ± 0.0000
-  SSH    - Accuracy: 0.9994 ± 0.0003, F1: 0.0000 ± 0.0000
-root@server3:/home/student#
+IMAP:
+  Training samples: 386, Attack ratio: 0.534
+  Test samples: 97, Attack ratio: 0.536
+
+DNS:
+  Training samples: 154688, Attack ratio: 0.000
+  Test samples: 38672, Attack ratio: 0.000
+
+SMTP:
+  Training samples: 35043, Attack ratio: 0.017
+  Test samples: 8761, Attack ratio: 0.017
+
+ICMP:
+  Training samples: 40, Attack ratio: 0.000
+  Test samples: 11, Attack ratio: 0.000
+  WARNING: No attack samples in training set!
+  WARNING: No attack samples in test set!
+
+SSH:
+  Training samples: 20684, Attack ratio: 0.000
+  Test samples: 5171, Attack ratio: 0.000
+
+================================================================================
+MODEL RANKING AND IDS IMPLEMENTATION RECOMMENDATIONS
+================================================================================
+
+Performance on applications with attack samples:
+k-NN  - Avg Acc: 0.9980, Avg F1: 0.7341
+Naive Bayes - Avg Acc: 0.9914, Avg F1: 0.3373
+
+ RECOMMENDED MODEL: k-NN (better F1-score)
+
+APPLICATIONS WITH VALID RESULTS: ['HTTP', 'IMAP', 'DNS', 'SMTP', 'SSH']
