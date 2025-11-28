@@ -56,7 +56,7 @@ def add_fan_in_fan_out_features(flows_df, time_window=300):
     Add fan-in and fan-out features using fast vectorized approach
     """
     print("\nAdding fan-in and fan-out features (vectorized)...")
-
+    print(flows_df)
     flows_df = flows_df.sort_values('first_timestamp').reset_index(drop=True)
 
     # Fast approach: compute based on global connection patterns
@@ -78,35 +78,47 @@ def add_fan_in_fan_out_features(flows_df, time_window=300):
 
 def load_ground_truth(gt_file):
     """
-    Load ground truth file (try multiple delimiters)
+    Load ground truth file with proper debugging
     """
     print("\nLoading ground truth...")
-    try:
-        # Try tab delimiter
-        gt_df = pd.read_csv(gt_file, sep='\t', header=None)
-        if len(gt_df.columns) < 7:
-            # Try space delimiter
-            gt_df = pd.read_csv(gt_file, sep='\s+', header=None)
-        if len(gt_df.columns) < 7:
-            # Try comma delimiter
-            gt_df = pd.read_csv(gt_file, sep=',', header=None)
-    except:
-        gt_df = pd.read_csv(gt_file, sep='\s+', header=None)
+    print(f"File: {gt_file}")
 
-    # Rename columns
+    # Try different delimiters
+    delimiters = ['\t', '\s+', ',', ' ']
+    gt_df = None
+
+    for delimiter in delimiters:
+        try:
+            gt_df = pd.read_csv(gt_file, sep=delimiter, header=None, engine='python')
+            print(f"  ✓ Successfully read with delimiter: {repr(delimiter)}")
+            print(f"  Shape: {gt_df.shape}")
+            print(f"  First row: {gt_df.iloc[0].tolist()}")
+            break
+        except Exception as e:
+            print(f"  ✗ Failed with delimiter {repr(delimiter)}: {e}")
+            continue
+
+    if gt_df is None:
+        raise ValueError("Could not read ground truth file with any delimiter")
+
+    # Check if first row is header (contains strings like 'dst_ip')
+    first_row_str = str(gt_df.iloc[0, 0])
+    print(f"  First cell value: {first_row_str}")
+
+    if not first_row_str.replace('.', '').replace('-', '').isdigit():
+        print("  → Detected header row, skipping...")
+        gt_df = gt_df.iloc[1:].reset_index(drop=True)
+
+    # Select first 7 columns
     if len(gt_df.columns) >= 7:
         gt_df = gt_df.iloc[:, :7]
-        gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
-                         'port_src', 'port_dst', 'protocol']
 
-    # Skip header row if it contains non-numeric data
-    try:
-        gt_df['port_src'] = gt_df['port_src'].astype(int)
-    except:
-        gt_df = gt_df.iloc[1:].reset_index(drop=True)
-        gt_df['port_src'] = gt_df['port_src'].astype(int)
+    gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
+                     'port_src', 'port_dst', 'protocol']
 
-    print(f"Ground truth flows: {len(gt_df)}")
+    print(f"  ✓ Ground truth flows: {len(gt_df)}")
+    print(f"  Sample row:\n{gt_df.iloc[0]}")
+
     return gt_df
 
 
