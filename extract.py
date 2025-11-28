@@ -79,10 +79,10 @@ def extract_single_pcap(pcap_file, output_dir, idle_timeout=60, active_timeout=1
 
 def extract_all_pcaps_threaded(pcap_dir, output_dir, num_threads=4, idle_timeout=60, active_timeout=120):
     """
-    Extract all pcap files to CSV using thread pool
+    Extract all pcap files to CSV using process pool
     """
     print("=" * 80)
-    print(f"PCAP TO CSV EXTRACTION (Fast Mode - {num_threads} threads)")
+    print(f"PCAP TO CSV EXTRACTION (Fast Mode - {num_threads} processes)")
     print("=" * 80)
 
     # Create output directory
@@ -98,11 +98,11 @@ def extract_all_pcaps_threaded(pcap_dir, output_dir, num_threads=4, idle_timeout
         print("No pcap files found!")
         return []
 
-    # Extract using thread pool
+    # Extract using process pool
     csv_files = []
     total_flows = 0
 
-    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+    with ProcessPoolExecutor(max_workers=num_threads) as executor:
         futures = {
             executor.submit(extract_single_pcap, pcap_file, output_dir, idle_timeout, active_timeout): pcap_file
             for pcap_file in pcap_files
@@ -126,6 +126,7 @@ def extract_all_pcaps_threaded(pcap_dir, output_dir, num_threads=4, idle_timeout
 # ============================================================================
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method('spawn', force=True)
     PCAP_DIR = "./TRAIN"
     OUTPUT_CSV_DIR = "./extracted_flows"
 
