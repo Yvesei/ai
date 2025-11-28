@@ -78,12 +78,12 @@ def add_fan_in_fan_out_features(flows_df, time_window=300):
 
     # Fast approach: compute based on global connection patterns
     # Fan-out: how many unique destinations each source connects to
-    fan_out_src = flows_df.groupby('src_ip')['dst_ip'].nunique().to_dict()
-    flows_df['fan_out_src'] = flows_df['src_ip'].map(fan_out_src).fillna(0).astype(int)
+    fan_out_src = flows_df.groupby('ip_src')['ip_dst'].nunique().to_dict()
+    flows_df['fan_out_src'] = flows_df['ip_src'].map(fan_out_src).fillna(0).astype(int)
 
     # Fan-in: how many unique sources connect to each destination
-    fan_in_dst = flows_df.groupby('dst_ip')['src_ip'].nunique().to_dict()
-    flows_df['fan_in_dst'] = flows_df['dst_ip'].map(fan_in_dst).fillna(0).astype(int)
+    fan_in_dst = flows_df.groupby('ip_dst')['ip_src'].nunique().to_dict()
+    flows_df['fan_in_dst'] = flows_df['ip_dst'].map(fan_in_dst).fillna(0).astype(int)
 
     print("✓ Fan-in and fan-out features added")
     print(f"  fan_out_src range: {flows_df['fan_out_src'].min()} to {flows_df['fan_out_src'].max()}")
@@ -161,7 +161,7 @@ def label_flows(flows_df, gt_df):
     # Create set for fast lookup
     gt_set = set()
     for _, row in gt_df.iterrows():
-        key = (row['ip_src'], row['ip_dst'], int(row['port_src']), int(row['port_dst']), int(row['protocol']))
+        key = (row['src_ip'], row['dst_ip'], int(row['src_port']), int(row['dst_port']), int(row['protocol']))
         gt_set.add(key)
 
     # Label flows
