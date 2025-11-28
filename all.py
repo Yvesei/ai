@@ -78,13 +78,29 @@ def add_fan_in_fan_out_features(flows_df, time_window=300):
 
 def load_ground_truth(gt_file):
     """
-    Load ground truth file
+    Load ground truth file (try multiple delimiters)
     """
     print("\nLoading ground truth...")
-    gt_df = pd.read_csv(gt_file, sep='\t', header=None)
-    gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
-                     'port_src', 'port_dst', 'protocol']
+    try:
+        # Try tab delimiter
+        gt_df = pd.read_csv(gt_file, sep='\t', header=None)
+        if len(gt_df.columns) < 7:
+            # Try space delimiter
+            gt_df = pd.read_csv(gt_file, sep='\s+', header=None)
+        if len(gt_df.columns) < 7:
+            # Try comma delimiter
+            gt_df = pd.read_csv(gt_file, sep=',', header=None)
+    except:
+        gt_df = pd.read_csv(gt_file, sep='\s+', header=None)
+
+    # Rename columns
+    if len(gt_df.columns) >= 7:
+        gt_df = gt_df.iloc[:, :7]
+        gt_df.columns = ['first_timestamp', 'last_timestamp', 'ip_src', 'ip_dst',
+                         'port_src', 'port_dst', 'protocol']
+
     print(f"Ground truth flows: {len(gt_df)}")
+    print(f"Columns: {gt_df.columns.tolist()}")
     return gt_df
 
 
