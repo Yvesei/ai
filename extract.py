@@ -9,7 +9,7 @@ import multiprocessing
 
 
 # ============================================================================
-# PART 1: FAST EXTRACTION OF PCAP FILES TO CSV (WITH THREADING)
+# FAST EXTRACTION OF PCAP FILES TO CSV (WITH THREADING)
 # ============================================================================
 
 def extract_single_pcap(pcap_file, output_dir, idle_timeout=60, active_timeout=120):
@@ -18,7 +18,7 @@ def extract_single_pcap(pcap_file, output_dir, idle_timeout=60, active_timeout=1
     """
     try:
         filename = os.path.basename(pcap_file)
-        csv_file = os.path.join(output_dir, filename.replace('.pcap', '.csv').replace('.pcapng', '.csv'))
+        csv_file = os.path.join(output_dir, filename.replace('.pcap', '.csv'))
 
         print(f"[EXTRACTING] {filename}...")
         start_time = time.time()
@@ -120,15 +120,9 @@ def extract_all_pcaps_threaded(pcap_dir, output_dir, num_threads=4, idle_timeout
 
     return csv_files
 
-
-# ============================================================================
-# USAGE: Run this ONCE to extract all pcaps
-# ============================================================================
-
 if __name__ == "__main__":
     multiprocessing.set_start_method('spawn', force=True)
     PCAP_DIR = "./TRAIN"
     OUTPUT_CSV_DIR = "./extracted_flows"
 
-    # Extract all pcaps to CSV files (only run this once!)
     csv_files = extract_all_pcaps_threaded(PCAP_DIR, OUTPUT_CSV_DIR, num_threads=4)
